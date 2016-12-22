@@ -24,14 +24,11 @@ namespace SoneraOMA.OAuth
             Config = config;
         }
 
-        // TODO: Error handling
         // TODO: Make json converting awaited maybe
         // TODO: Remove url strings
-        public async Task<Result<AccessTokenResponse, AccessTokenError>> RequestAccessTokenAsync()
+        /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
+        public async Task<AccessTokenResponse> RequestAccessTokenAsync()
         {
-            Result<AccessTokenResponse, AccessTokenError> CreateFailure(AccessTokenError error) => 
-                Result.CreateFailure<AccessTokenResponse, AccessTokenError>(error);
-
             using (var client = new WebClient())
             {
                 client.Credentials = new NetworkCredential(Username, Password);
@@ -47,29 +44,29 @@ namespace SoneraOMA.OAuth
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
                     var statusCode = ((HttpWebResponse)ex.Response).StatusCode;
-                    if (statusCode == HttpStatusCode.Unauthorized) return CreateFailure(AccessTokenError.AuthenticationFailed);
-                    if (statusCode == HttpStatusCode.BadRequest) return CreateFailure(AccessTokenError.InvalidRequest);
+                    if (statusCode == HttpStatusCode.Unauthorized) throw new AuthenticationException("Authentication failed", ex);
+                    if (statusCode == HttpStatusCode.BadRequest) throw new AuthenticationException("Invalid request", ex);
                     if (statusCode == HttpStatusCode.Forbidden)
                     {
                         // TODO: Handle policy exceptions
-                        return CreateFailure(AccessTokenError.RequestFailed);
+                        throw new AuthenticationException("Request failed due to policy exception", ex);
                     }
 
-                    return CreateFailure(AccessTokenError.RequestFailed);
+                    throw new AuthenticationException("Request failed due to unknown web exception", ex);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return CreateFailure(AccessTokenError.RequestFailed);
+                    throw new AuthenticationException("Request failed due to unknown reason", ex);
                 }
 
                 try
                 {
                     var response = Encoding.UTF8.GetString(responseBytes);
-                    return Result.CreateSuccess<AccessTokenResponse, AccessTokenError>(JsonConvert.DeserializeObject<AccessTokenResponse>(response));
+                    return JsonConvert.DeserializeObject<AccessTokenResponse>(response);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return CreateFailure(AccessTokenError.InvalidResponse);
+                    throw new AuthenticationException("Response reading failed due to unknown reason", ex);
                 }
             }
         }

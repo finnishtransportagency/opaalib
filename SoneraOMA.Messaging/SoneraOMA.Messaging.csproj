@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Messenger.cs" />
     <Compile Include="MessengerConfiguration.cs" />
+    <Compile Include="OutboundMessageException.cs" />
     <Compile Include="OutboundMessageRequest.cs" />
     <Compile Include="OutboundMessageResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

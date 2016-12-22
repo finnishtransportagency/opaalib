@@ -13,12 +13,4 @@ namespace SoneraOMA.OAuth
         [JsonProperty(PropertyName = "expires_in", Required = Required.Always)]
         public int ExpiresIn { get; set; }
     }
-
-    public enum AccessTokenError
-    {
-        RequestFailed,
-        InvalidRequest,
-        InvalidResponse,
-        AuthenticationFailed
-    }
 }

@@ -24,13 +24,11 @@ namespace SoneraOMA.Messaging
             Config = messengerConfiguration;
         }
 
-        public async Task<Result<OutboundMessageResponse, OutboundMessageError>> OutboundMessageRequestAsync(OutboundMessageRequestContainer outboundMessage)
+        /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
+        /// <exception cref="OutboundMessageException">Thrown when sending of outbound message request fails</exception>
+        public async Task<OutboundMessageResponse> OutboundMessageRequestAsync(OutboundMessageRequestContainer outboundMessage)
         {
-            Result<OutboundMessageResponse, OutboundMessageError> CreateFailure(OutboundMessageError error) =>
-                Result.CreateFailure<OutboundMessageResponse, OutboundMessageError>(error);
-
-            var validToken = await RefreshAccessTokenIfNeededAsync();
-            if (!validToken) return CreateFailure(OutboundMessageError.AuthenticationFailed);
+            await RefreshAccessTokenIfNeededAsync();
 
             using (var client = new WebClient())
             {
@@ -49,47 +47,40 @@ namespace SoneraOMA.Messaging
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
                     var statusCode = ((HttpWebResponse)ex.Response).StatusCode;
-                    if (statusCode == HttpStatusCode.Unauthorized) return CreateFailure(OutboundMessageError.AuthenticationFailed);
-                    if (statusCode == HttpStatusCode.BadRequest) return CreateFailure(OutboundMessageError.InvalidRequest);
+                    if (statusCode == HttpStatusCode.Unauthorized) throw new OutboundMessageException("Authentication failed", ex);
+                    if (statusCode == HttpStatusCode.BadRequest) throw new OutboundMessageException("Invalid request", ex);
                     if (statusCode == HttpStatusCode.Forbidden)
                     {
                         // TODO: Handle policy exceptions
-                        return CreateFailure(OutboundMessageError.RequestFailed);
+                        throw new OutboundMessageException("Request failed due to policy exception", ex);
                     }
 
-                    return CreateFailure(OutboundMessageError.RequestFailed);
+                    throw new OutboundMessageException("Request failed due to unknown web exception", ex);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return CreateFailure(OutboundMessageError.RequestFailed);
+                    throw new OutboundMessageException("Request failed due to unknown reason", ex);
                 }
 
                 try
                 {
                     var response = Encoding.UTF8.GetString(responseBytes);
-                    return Result.CreateSuccess<OutboundMessageResponse, OutboundMessageError>(
-                        JsonConvert.DeserializeObject<OutboundMessageResponse>(response));
+                    return JsonConvert.DeserializeObject<OutboundMessageResponse>(response);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    return CreateFailure(OutboundMessageError.InvalidResponse);
+                    throw new OutboundMessageException("Response reading failed due to unknown reason", ex);
                 }
             }
         }
 
-        public async Task<bool> RefreshAccessTokenIfNeededAsync()
+        /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
+        public async Task RefreshAccessTokenIfNeededAsync()
         {
-            if (latestAccessToken != null && (DateTime.UtcNow - accessTokenExpires).TotalSeconds > 10) return true;
+            if (latestAccessToken != null && (DateTime.UtcNow - accessTokenExpires).TotalSeconds > 10) return;
 
-            var result = await Authenticator.RequestAccessTokenAsync();
-            if (result.IsOk)
-            {
-                latestAccessToken = result.GetResult();
-                accessTokenExpires = DateTime.UtcNow + TimeSpan.FromSeconds(latestAccessToken.ExpiresIn);
-                return true;
-            }
-
-            return false;
+            latestAccessToken = await Authenticator.RequestAccessTokenAsync();
+            accessTokenExpires = DateTime.UtcNow + TimeSpan.FromSeconds(latestAccessToken.ExpiresIn);
         }
     }
 }

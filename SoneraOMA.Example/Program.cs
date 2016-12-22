@@ -14,7 +14,7 @@ namespace SoneraOMA.Example
         static void Main(string[] args)
         {
             var oauth = new Authenticator("test", "asd", AuthenticatorConfiguration.Default);
-            var accessToken = oauth.RequestAccessTokenAsync().Result.GetResult();
+            var accessToken = oauth.RequestAccessTokenAsync().Result;
         }
     }
 }
