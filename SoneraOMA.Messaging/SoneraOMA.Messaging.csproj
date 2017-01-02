@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DeliveryInfoList.cs" />
+    <Compile Include="DeliveryInfoNotification.cs" />
     <Compile Include="InboundMessageList.cs" />
     <Compile Include="InboundMessageNotification.cs" />
     <Compile Include="InboundMessageRetrieveAndDeleteRequest.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="OutboundMessageRequest.cs" />
     <Compile Include="OutboundMessageResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RequestError.cs" />
     <Compile Include="SingleStringToListConverter.cs" />
   </ItemGroup>
   <ItemGroup>
