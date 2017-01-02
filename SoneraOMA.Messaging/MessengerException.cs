@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SoneraOMA.Messaging
 {
-    public class OutboundMessageException : Exception
+    public class MessengerException : Exception
     {
-        public OutboundMessageException(string message, Exception innerException)
+        public MessengerException(string message, Exception innerException)
             : base(message, innerException)
         {
 

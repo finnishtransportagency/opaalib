@@ -43,9 +43,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeliveryInfoList.cs" />
+    <Compile Include="InboundMessageList.cs" />
+    <Compile Include="InboundMessageRetrieveAndDeleteRequest.cs" />
     <Compile Include="Messenger.cs" />
     <Compile Include="MessengerConfiguration.cs" />
-    <Compile Include="OutboundMessageException.cs" />
+    <Compile Include="MessengerException.cs" />
     <Compile Include="OutboundMessageRequest.cs" />
     <Compile Include="OutboundMessageResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
