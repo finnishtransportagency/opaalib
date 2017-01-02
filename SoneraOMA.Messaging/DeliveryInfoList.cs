@@ -19,7 +19,7 @@ namespace SoneraOMA.Messaging
         public string ResourceUrl { get; set; }
 
         [JsonProperty(PropertyName = "deliveryInfo", Required = Required.Always)]
-        public DeliveryInfo DeliveryInfo { get; set; }
+        public DeliveryInfo[] DeliveryInfo { get; set; }
     }
 
     public class DeliveryInfo

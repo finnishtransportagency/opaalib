@@ -15,11 +15,13 @@ namespace SoneraOMA.Messaging
 
     public class InboundMessageRetrieveAndDeleteRequest
     {
+        // TODO: use enum instead?
         [JsonProperty(PropertyName = "retrievalOrder")]
-        public RetrievalOrder RetrievalOrder { get; set; }
+        public string RetrievalOrder { get; set; }
 
+        // TODO: use enum instead?
         [JsonProperty(PropertyName = "priority")]
-        public MessagePriority Priority { get; set; }
+        public string Priority { get; set; }
 
         [JsonProperty(PropertyName = "maxBatchSize")]
         public int MaxBatchSize { get; set; }

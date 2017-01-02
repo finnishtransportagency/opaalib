@@ -149,5 +149,83 @@ namespace SoneraOMA.Messaging.Tests
             Assert.Equal(req.ReceiptRequest.NotificationFormat, "JSON");
             Assert.Equal(req.ReceiptRequest.CallbackData, "test callback data");
         }
+
+        [Fact]
+        public void OutboundMessageResponseJson1()
+        {
+            var json = @"{
+    ""resourceReference"" : {
+    ""resourceURL"" : ""https://api.sonera.fi/production/messaging/v1/outbound/tel%3A%2B358405005900/requests/2f57108f-cdb4-4501-9f02-b6f5399596e2""
+    }
+}";
+
+            var d = JsonConvert.DeserializeObject<OutboundMessageResponse>(json);
+            var res = d.ResourceReference;
+
+            Assert.Equal(res.ResourceUrl, "https://api.sonera.fi/production/messaging/v1/outbound/tel%3A%2B358405005900/requests/2f57108f-cdb4-4501-9f02-b6f5399596e2");
+        }
+
+        [Fact]
+        public void OutboundMessageDeliveryStatusResponseJson1()
+        {
+            var json = @"{
+    ""deliveryInfoList"": {
+
+        ""resourceURL"": ""https://api.sonera.fi/production/messaging/v1/outbound/tel%3A%2B358405005900/requests/cb513ae8-c630-409e-abcb-6bb55cfd7873/deliveryInfos"",
+	    ""deliveryInfo"": [
+		    {
+			    ""address"": ""tel:+358405007000"",
+			    ""deliveryStatus"": ""DeliveryImpossible""
+
+            },
+		    {
+			    ""address"": ""tel:+358405007001"",
+			    ""deliveryStatus"": ""DeliveredToNetwork""
+		    },
+		    {
+			    ""address"": ""tel:+358405007002"",
+			    ""deliveryStatus"": ""DeliveryImpossible""
+		    }
+	    ]
+    }
+}";
+
+            var d = JsonConvert.DeserializeObject<DeliveryInfoListContainer>(json);
+            var res = d.DeliveryInfoList;
+
+            Assert.Equal("https://api.sonera.fi/production/messaging/v1/outbound/tel%3A%2B358405005900/requests/cb513ae8-c630-409e-abcb-6bb55cfd7873/deliveryInfos", res.ResourceUrl);
+            Assert.Collection(res.DeliveryInfo,
+                v => 
+                {
+                    Assert.Equal("tel:+358405007000", v.Address);
+                    Assert.Equal(DeliveryStatus.DeliveryImpossible, v.DeliveryStatus);
+                },
+                v =>
+                {
+                    Assert.Equal("tel:+358405007001", v.Address);
+                    Assert.Equal(DeliveryStatus.DeliveredToNetwork, v.DeliveryStatus);
+                },
+                v =>
+                {
+                    Assert.Equal("tel:+358405007002", v.Address);
+                    Assert.Equal(DeliveryStatus.DeliveryImpossible, v.DeliveryStatus);
+                });
+        }
+
+        [Fact]
+        public void InboundMessageRetrieveAndDeleteRequestJson1()
+        {
+            var json = @"{
+""inboundMessageRetrieveAndDeleteRequest"":{
+    ""retrievalOrder"":""OldestFirst"",
+    ""useAttachmentURLs"":""true""}
+    }";
+
+            var d = JsonConvert.DeserializeObject<InboundMessageRetrieveAndDeleteRequestContainer>(json);
+            var req = d.InboundMessageRetrieveAndDeleteRequest;
+
+            Assert.Equal(req.RetrievalOrder, "OldestFirst");
+            Assert.Equal(req.UseAttachmentUrls, true);
+        }
     }
 }
