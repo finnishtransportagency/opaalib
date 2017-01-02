@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="DeliveryInfoList.cs" />
     <Compile Include="InboundMessageList.cs" />
+    <Compile Include="InboundMessageNotification.cs" />
     <Compile Include="InboundMessageRetrieveAndDeleteRequest.cs" />
     <Compile Include="Messenger.cs" />
     <Compile Include="MessengerConfiguration.cs" />
