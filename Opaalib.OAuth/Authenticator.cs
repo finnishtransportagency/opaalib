@@ -36,10 +36,11 @@ namespace Opaalib.OAuth
                 byte[] responseBytes = null;
                 try
                 {
-                    responseBytes = await client.UploadValuesTaskAsync($"{Config.CombinedAddress}/token", "POST", new NameValueCollection
+                    // HACK: Using StartNew because .NET 4.0 doesn't have method which returns a Task
+                    responseBytes = await Task.Factory.StartNew(() => client.UploadValues($"{Config.CombinedAddress}/token", "POST", new NameValueCollection
                     {
                         {  "grant_type", "client_credentials" }
-                    });
+                    }));
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
