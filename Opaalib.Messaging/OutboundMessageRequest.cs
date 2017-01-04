@@ -20,6 +20,7 @@ namespace Opaalib.Messaging
         /// least 9 digits prefixed with “tel:+”.
         /// </summary>
         [JsonProperty(PropertyName = "address", Required = Required.Always)]
+        // TODO: Conflicting information on documentation. I guess the conversion is not needed after all so this is commented.
         ///[JsonConverter(typeof(SingleStringToListConverter))]
         public List<string> Address { get; set; }
 
