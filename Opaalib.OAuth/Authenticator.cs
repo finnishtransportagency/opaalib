@@ -3,6 +3,7 @@ using Opaalib.Shared;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -47,16 +48,25 @@ namespace Opaalib.OAuth
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
-                    var statusCode = ((HttpWebResponse)ex.Response).StatusCode;
-                    if (statusCode == HttpStatusCode.Unauthorized) throw new AuthenticationException("Authentication failed", ex);
-                    if (statusCode == HttpStatusCode.BadRequest) throw new AuthenticationException("Invalid request", ex);
+                    var response = (HttpWebResponse)ex.Response;
+                    var statusCode = response.StatusCode;
+
+                    string responseJson;
+                    using (var stream = response.GetResponseStream())
+                    using (var sr = new StreamReader(stream))
+                    {
+                        responseJson = sr.ReadToEnd();
+                    }
+
+                    if (statusCode == HttpStatusCode.Unauthorized) throw new AuthenticationException("Authentication failed", ex, responseJson);
+                    if (statusCode == HttpStatusCode.BadRequest) throw new AuthenticationException("Invalid request", ex, responseJson);
                     if (statusCode == HttpStatusCode.Forbidden)
                     {
                         // TODO: Handle policy exceptions
-                        throw new AuthenticationException("Request failed due to policy exception", ex);
+                        throw new AuthenticationException("Request failed due to policy exception", ex, responseJson);
                     }
 
-                    throw new AuthenticationException("Request failed due to unknown web exception", ex);
+                    throw new AuthenticationException("Request failed due to unknown web exception", ex, responseJson);
                 }
                 catch (Exception ex)
                 {

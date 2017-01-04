@@ -3,6 +3,7 @@ using Opaalib.OAuth;
 using Opaalib.Shared;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -47,16 +48,7 @@ namespace Opaalib.Messaging
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
-                    var statusCode = ((HttpWebResponse)ex.Response).StatusCode;
-                    if (statusCode == HttpStatusCode.Unauthorized) throw new MessengerException("Authentication failed", ex);
-                    if (statusCode == HttpStatusCode.BadRequest) throw new MessengerException("Invalid request", ex);
-                    if (statusCode == HttpStatusCode.Forbidden)
-                    {
-                        // TODO: Handle policy exceptions
-                        throw new MessengerException("Request failed due to policy exception", ex);
-                    }
-
-                    throw new MessengerException("Request failed due to unknown web exception", ex);
+                    HandleWebException(ex);
                 }
                 catch (Exception ex)
                 {
@@ -94,16 +86,7 @@ namespace Opaalib.Messaging
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
-                    var statusCode = ((HttpWebResponse)ex.Response).StatusCode;
-                    if (statusCode == HttpStatusCode.Unauthorized) throw new MessengerException("Authentication failed", ex);
-                    if (statusCode == HttpStatusCode.BadRequest) throw new MessengerException("Invalid request", ex);
-                    if (statusCode == HttpStatusCode.Forbidden)
-                    {
-                        // TODO: Handle policy exceptions
-                        throw new MessengerException("Request failed due to policy exception", ex);
-                    }
-
-                    throw new MessengerException("Request failed due to unknown web exception", ex);
+                    HandleWebException(ex);
                 }
                 catch (Exception ex)
                 {
@@ -144,16 +127,7 @@ namespace Opaalib.Messaging
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
-                    var statusCode = ((HttpWebResponse)ex.Response).StatusCode;
-                    if (statusCode == HttpStatusCode.Unauthorized) throw new MessengerException("Authentication failed", ex);
-                    if (statusCode == HttpStatusCode.BadRequest) throw new MessengerException("Invalid request", ex);
-                    if (statusCode == HttpStatusCode.Forbidden)
-                    {
-                        // TODO: Handle policy exceptions
-                        throw new MessengerException("Request failed due to policy exception", ex);
-                    }
-
-                    throw new MessengerException("Request failed due to unknown web exception", ex);
+                    HandleWebException(ex);
                 }
                 catch (Exception ex)
                 {
@@ -193,6 +167,29 @@ namespace Opaalib.Messaging
                 latestAccessToken = newAccessToken;
                 accessTokenExpires = DateTime.UtcNow + TimeSpan.FromSeconds(latestAccessToken.ExpiresIn);
             }
+        }
+
+        private void HandleWebException(WebException ex)
+        {
+            var response = (HttpWebResponse)ex.Response;
+            var statusCode = response.StatusCode;
+
+            string responseJson;
+            using (var stream = response.GetResponseStream())
+            using (var sr = new StreamReader(stream))
+            {
+                responseJson = sr.ReadToEnd();
+            }
+
+            if (statusCode == HttpStatusCode.Unauthorized) throw new MessengerException("Authentication failed", ex, responseJson);
+            if (statusCode == HttpStatusCode.BadRequest) throw new MessengerException("Invalid request", ex, responseJson);
+            if (statusCode == HttpStatusCode.Forbidden)
+            {
+                // TODO: Handle policy exceptions
+                throw new MessengerException("Request failed due to policy exception", ex, responseJson);
+            }
+
+            throw new MessengerException("Request failed due to unknown web exception", ex, responseJson);
         }
     }
 }
