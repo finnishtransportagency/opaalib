@@ -17,7 +17,7 @@ namespace Opaalib.OAuth
         }
 
         public AuthenticationException(string message, Exception innerException, string responseJson)
-            : base(message, innerException)
+            : this(message, innerException)
         {
             ResponseJson = responseJson;
         }
