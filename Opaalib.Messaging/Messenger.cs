@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Opaalib.Messaging
@@ -18,7 +19,7 @@ namespace Opaalib.Messaging
 
         private DateTime accessTokenExpires;
         private AccessTokenResponse latestAccessToken;
-        private object accessTokenLock = new object();
+        private readonly SemaphoreSlim accessTokenLock = new SemaphoreSlim(1, 1);
 
         public Messenger(Authenticator authenticator, MessengerConfiguration messengerConfiguration)
         {
@@ -149,24 +150,35 @@ namespace Opaalib.Messaging
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         public async Task RefreshAccessTokenIfNeededAsync()
         {
-            lock (accessTokenLock)
+            await Task.Factory.StartNew(() => accessTokenLock.Wait());
+
+            var expires = (DateTime.UtcNow - accessTokenExpires).TotalSeconds;
+            if (latestAccessToken != null && (DateTime.UtcNow - accessTokenExpires).TotalSeconds > 10)
             {
-                if (latestAccessToken != null && (DateTime.UtcNow - accessTokenExpires).TotalSeconds > 10) return;
+                accessTokenLock.Release();
+                return;
             }
 
-            await ForceAccessTokenRefreshAsync();
+            await ForceAccessTokenRefreshAsyncInternal();
+            accessTokenLock.Release();
+        }
+
+        private async Task ForceAccessTokenRefreshAsyncInternal()
+        {
+            var newAccessToken = await Authenticator.RequestAccessTokenAsync();
+
+            latestAccessToken = newAccessToken;
+            accessTokenExpires = DateTime.UtcNow + TimeSpan.FromSeconds(latestAccessToken.ExpiresIn);
         }
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         public async Task ForceAccessTokenRefreshAsync()
         {
-            var newAccessToken = await Authenticator.RequestAccessTokenAsync();
+            await Task.Factory.StartNew(() => accessTokenLock.Wait());
 
-            lock (accessTokenLock)
-            {
-                latestAccessToken = newAccessToken;
-                accessTokenExpires = DateTime.UtcNow + TimeSpan.FromSeconds(latestAccessToken.ExpiresIn);
-            }
+            await ForceAccessTokenRefreshAsyncInternal();
+
+            accessTokenLock.Release();
         }
 
         private void HandleWebException(WebException ex)
