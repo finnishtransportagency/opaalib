@@ -8,15 +8,13 @@ namespace Opaalib.Messaging
 {
     public class MessengerConfiguration
     {
-        public string RegistrationId { get; }
         public string SenderAddress { get; }
         public string BaseAddress { get; }
         public int ApiVersion { get; }
         public string CombinedAddress => $"{BaseAddress}/v{ApiVersion}";
 
-        public MessengerConfiguration(string registrationId, string senderAddress, string baseAddress = "https://api.sonera.fi/sandbox/messaging", int apiVersion = 1)
+        public MessengerConfiguration(string senderAddress, string baseAddress = "https://api.sonera.fi/sandbox/messaging", int apiVersion = 1)
         {
-            RegistrationId = registrationId;
             SenderAddress = senderAddress;
             BaseAddress = baseAddress;
             ApiVersion = apiVersion;

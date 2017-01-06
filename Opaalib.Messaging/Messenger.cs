@@ -107,7 +107,7 @@ namespace Opaalib.Messaging
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when sending of inbound message request fails</exception>
-        public async Task<InboundMessageListContainer> RetrieveAndDeleteMessagesAsync(InboundMessageRetrieveAndDeleteRequestContainer inboundMessage)
+        public async Task<InboundMessageListContainer> RetrieveAndDeleteMessagesAsync(InboundMessageRetrieveAndDeleteRequestContainer inboundMessage, string registrationId)
         {
             await RefreshAccessTokenIfNeededAsync();
 
@@ -123,7 +123,7 @@ namespace Opaalib.Messaging
                     var jsonBytes = Encoding.UTF8.GetBytes(jsonStr);
 
                     responseBytes = await client.UploadDataTaskAsync(
-                        $"{Config.CombinedAddress}/inbound/registrations/{Config.RegistrationId}/messages/retrieveAndDeleteMessages", "POST", jsonBytes);
+                        $"{Config.CombinedAddress}/inbound/registrations/{registrationId}/messages/retrieveAndDeleteMessages", "POST", jsonBytes);
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
