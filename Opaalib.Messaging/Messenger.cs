@@ -45,7 +45,7 @@ namespace Opaalib.Messaging
                     var jsonBytes = Encoding.UTF8.GetBytes(jsonStr);
 
                     responseBytes = await client.UploadDataTaskAsync(
-                        $"{Config.CombinedAddress}/outbound/{Config.SenderAddress}/requests", "POST", jsonBytes);
+                        $"{Config.BaseAddress}/outbound/{Config.SenderAddress}/requests", "POST", jsonBytes);
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
@@ -82,7 +82,7 @@ namespace Opaalib.Messaging
                 try
                 {
                     responseBytes = await client.DownloadDataTaskAsync(
-                        $"{Config.CombinedAddress}/outbound/{Config.SenderAddress}/requests/{requestId}/deliveryInfos");
+                        $"{Config.BaseAddress}/outbound/{Config.SenderAddress}/requests/{requestId}/deliveryInfos");
 
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
@@ -124,7 +124,7 @@ namespace Opaalib.Messaging
                     var jsonBytes = Encoding.UTF8.GetBytes(jsonStr);
 
                     responseBytes = await client.UploadDataTaskAsync(
-                        $"{Config.CombinedAddress}/inbound/registrations/{registrationId}/messages/retrieveAndDeleteMessages", "POST", jsonBytes);
+                        $"{Config.BaseAddress}/inbound/registrations/{registrationId}/messages/retrieveAndDeleteMessages", "POST", jsonBytes);
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {

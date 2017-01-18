@@ -10,14 +10,11 @@ namespace Opaalib.Messaging
     {
         public string SenderAddress { get; }
         public string BaseAddress { get; }
-        public int ApiVersion { get; }
-        public string CombinedAddress => $"{BaseAddress}/v{ApiVersion}";
 
-        public MessengerConfiguration(string senderAddress, string baseAddress = "https://api.sonera.fi/sandbox/messaging", int apiVersion = 1)
+        public MessengerConfiguration(string senderAddress, string baseAddress = "https://api.sonera.fi/sandbox/messaging/v1")
         {
             SenderAddress = senderAddress;
             BaseAddress = baseAddress;
-            ApiVersion = apiVersion;
         }
     }
 }
