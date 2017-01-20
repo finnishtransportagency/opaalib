@@ -40,10 +40,11 @@ namespace Opaalib.OAuth
                 try
                 {
                     // HACK: Using StartNew because .NET 4.0 doesn't have method which returns a Task
-                    responseBytes = await Task.Factory.StartNew(() => client.UploadValues($"{Config.BaseAddress}/token", "POST", new NameValueCollection
+                    var task = TaskEx.Run(() => client.UploadValues($"{Config.BaseAddress}/token", "POST", new NameValueCollection
                     {
                         {  "grant_type", "client_credentials" }
                     }));
+                    responseBytes = await task;
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {

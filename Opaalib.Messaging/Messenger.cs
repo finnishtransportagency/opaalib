@@ -150,7 +150,7 @@ namespace Opaalib.Messaging
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         public async Task RefreshAccessTokenIfNeededAsync()
         {
-            await Task.Factory.StartNew(() => accessTokenLock.Wait());
+            await TaskEx.Run(() => accessTokenLock.Wait());
 
             var expires = (DateTime.UtcNow - accessTokenExpires).TotalSeconds;
             if (latestAccessToken != null && (DateTime.UtcNow - accessTokenExpires).TotalSeconds > 10)
@@ -160,25 +160,29 @@ namespace Opaalib.Messaging
             }
 
             await ForceAccessTokenRefreshAsyncInternal();
-            accessTokenLock.Release();
         }
 
         private async Task ForceAccessTokenRefreshAsyncInternal()
         {
-            var newAccessToken = await Authenticator.RequestAccessTokenAsync();
+            AccessTokenResponse newAccessToken = null;
+            try
+            {
+                newAccessToken = await Authenticator.RequestAccessTokenAsync();
 
-            latestAccessToken = newAccessToken;
-            accessTokenExpires = DateTime.UtcNow + TimeSpan.FromSeconds(latestAccessToken.ExpiresIn);
+                latestAccessToken = newAccessToken;
+                accessTokenExpires = DateTime.UtcNow + TimeSpan.FromSeconds(latestAccessToken.ExpiresIn);
+            }
+            finally
+            {
+                accessTokenLock.Release();
+            }
         }
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         public async Task ForceAccessTokenRefreshAsync()
         {
-            await Task.Factory.StartNew(() => accessTokenLock.Wait());
-
+            await TaskEx.Run(() => accessTokenLock.Wait());
             await ForceAccessTokenRefreshAsyncInternal();
-
-            accessTokenLock.Release();
         }
 
         private void HandleWebException(WebException ex)
