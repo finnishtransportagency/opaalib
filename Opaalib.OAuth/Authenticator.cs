@@ -32,7 +32,7 @@ namespace Opaalib.OAuth
             // This is a hack to force TLS 1.2. Does not work if you don't have .NET 4.5 installed
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
 
-            using (var client = new WebClient())
+            using (var client = new MyWebClient())
             {
                 client.Credentials = new NetworkCredential(Username, Password);
                 client.Headers[HttpRequestHeader.ContentType] = "application/x-www-form-urlencoded";

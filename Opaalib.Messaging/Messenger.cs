@@ -33,7 +33,7 @@ namespace Opaalib.Messaging
         {
             await RefreshAccessTokenIfNeededAsync();
 
-            using (var client = new WebClient())
+            using (var client = new MyWebClient())
             {
                 client.Headers[HttpRequestHeader.Authorization] = $"Bearer {latestAccessToken.AccessToken}";
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
@@ -74,7 +74,7 @@ namespace Opaalib.Messaging
         {
             await RefreshAccessTokenIfNeededAsync();
 
-            using (var client = new WebClient())
+            using (var client = new MyWebClient())
             {
                 client.Headers[HttpRequestHeader.Authorization] = $"Bearer {latestAccessToken.AccessToken}";
                 client.Headers[HttpRequestHeader.Accept] = "application/json";
@@ -112,7 +112,7 @@ namespace Opaalib.Messaging
         {
             await RefreshAccessTokenIfNeededAsync();
 
-            using (var client = new WebClient())
+            using (var client = new MyWebClient())
             {
                 client.Headers[HttpRequestHeader.Authorization] = $"Bearer {latestAccessToken.AccessToken}";
                 client.Headers[HttpRequestHeader.ContentType] = "application/json";
