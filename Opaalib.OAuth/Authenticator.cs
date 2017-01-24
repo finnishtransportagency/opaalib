@@ -30,7 +30,7 @@ namespace Opaalib.OAuth
         public async Task<AccessTokenResponse> RequestAccessTokenAsync()
         {
             // This is a hack to force TLS 1.2. Does not work if you don't have .NET 4.5 installed
-            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+            //ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
 
             using (var client = new MyWebClient())
             {
