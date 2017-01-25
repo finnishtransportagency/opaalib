@@ -45,7 +45,7 @@ namespace Opaalib.Messaging
                     var jsonBytes = Encoding.UTF8.GetBytes(jsonStr);
 
                     responseBytes = await client.UploadDataTaskAsync(
-                        $"{Config.BaseAddress}/outbound/{Config.SenderAddress}/requests", "POST", jsonBytes);
+                        $"{Config.BaseAddress}/outbound/{outboundMessage.OutboundMessageRequest.SenderAddress}/requests", "POST", jsonBytes);
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
@@ -70,8 +70,13 @@ namespace Opaalib.Messaging
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when reading delivery status fails</exception>
-        public async Task<DeliveryInfoListContainer> ReadOutboundMessageDeliveryStatusAsync(string requestId)
+        public async Task<DeliveryInfoListContainer> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress = null)
         {
+            if (senderAddress == null)
+            {
+                senderAddress = Config.SenderAddress;
+            }
+
             await RefreshAccessTokenIfNeededAsync();
 
             using (var client = new MyWebClient())
@@ -82,7 +87,7 @@ namespace Opaalib.Messaging
                 try
                 {
                     responseBytes = await client.DownloadDataTaskAsync(
-                        $"{Config.BaseAddress}/outbound/{Config.SenderAddress}/requests/{requestId}/deliveryInfos");
+                        $"{Config.BaseAddress}/outbound/{senderAddress}/requests/{requestId}/deliveryInfos");
 
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)

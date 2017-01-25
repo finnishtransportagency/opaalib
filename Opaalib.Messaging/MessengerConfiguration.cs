@@ -8,6 +8,7 @@ namespace Opaalib.Messaging
 {
     public class MessengerConfiguration
     {
+        // TODO: Remove this and pass as parameter?
         public string SenderAddress { get; }
         public string BaseAddress { get; }
 
