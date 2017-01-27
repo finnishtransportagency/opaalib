@@ -17,6 +17,19 @@ namespace Opaalib.OAuth
         public string Password { get; }
         public AuthenticatorConfiguration Config { get; }
 
+        static Authenticator()
+        {
+            try
+            {
+                // This is a hack to force TLS 1.2. Does not work if you don't have .NET 4.5 installed
+                ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+
         public Authenticator(string username, string password, AuthenticatorConfiguration config)
         {
             Username = username;
@@ -29,9 +42,6 @@ namespace Opaalib.OAuth
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         public async Task<AccessTokenResponse> RequestAccessTokenAsync()
         {
-            // This is a hack to force TLS 1.2. Does not work if you don't have .NET 4.5 installed
-            //ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
-
             using (var client = new MyWebClient())
             {
                 client.Credentials = new NetworkCredential(Username, Password);
