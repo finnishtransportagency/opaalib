@@ -70,13 +70,8 @@ namespace Opaalib.Messaging
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when reading delivery status fails</exception>
-        public async Task<DeliveryInfoListContainer> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress = null)
+        public async Task<DeliveryInfoListContainer> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress)
         {
-            if (senderAddress == null)
-            {
-                senderAddress = Config.SenderAddress;
-            }
-
             await RefreshAccessTokenIfNeededAsync();
 
             using (var client = new MyWebClient())
@@ -199,7 +194,6 @@ namespace Opaalib.Messaging
             if (statusCode == HttpStatusCode.BadRequest) throw new MessengerException("Invalid request", ex);
             if (statusCode == HttpStatusCode.Forbidden)
             {
-                // TODO: Handle policy exceptions
                 throw new MessengerException("Request failed due to policy exception", ex);
             }
 

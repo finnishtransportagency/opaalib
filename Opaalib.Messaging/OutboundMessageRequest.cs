@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,7 @@ namespace Opaalib.Messaging
         /// least 9 digits prefixed with “tel:+”.
         /// </summary>
         [JsonProperty(PropertyName = "address", Required = Required.Always)]
-        // TODO: Conflicting information on documentation. I guess the conversion is not needed after all so this is commented.
+        // Conflicting information on documentation. I guess the conversion is not needed after all so this attribute is commented.
         ///[JsonConverter(typeof(SingleStringToListConverter))]
         public List<string> Address { get; set; }
 
@@ -97,9 +98,8 @@ namespace Opaalib.Messaging
         /// <summary>
         /// JSON or XML
         /// </summary>
-        // TODO: Maybe do enum conversion here (JSON or XML)
-        [JsonProperty(PropertyName = "notificationFormat")]
-        public string NotificationFormat { get; set; }
+        [JsonProperty(PropertyName = "notificationFormat", ItemConverterType = typeof(StringEnumConverter))]
+        public NotificationFormat NotificationFormat { get; set; }
 
         /// <summary>
         /// Useful data to be passed back in the notification to
@@ -151,7 +151,6 @@ namespace Opaalib.Messaging
         /// <summary>
         /// Format should be base64Binary
         /// </summary>
-        // TODO: Maybe do some kind of conversion here
         [JsonProperty(PropertyName = "message", Required = Required.Always)]
         public string Message { get; set; }
     }
@@ -167,5 +166,11 @@ namespace Opaalib.Messaging
     {
         [JsonProperty(PropertyName = "message", Required = Required.Always)]
         public string Message { get; set; }
+    }
+
+    public enum NotificationFormat
+    {
+        JSON,
+        XML,
     }
 }

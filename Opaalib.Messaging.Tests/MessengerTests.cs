@@ -62,7 +62,7 @@ namespace Opaalib.Messaging.Tests
             Assert.Equal(req.OutboundSmsBinaryMessage.Message, "BgUEAAAASGVsbG8gdGhlcmU=");
             Assert.Equal(req.SenderName, "Sonera");
             Assert.Equal(req.ReceiptRequest.NotifyUrl, "https://hostname:port/application notification endpoint");
-            Assert.Equal(req.ReceiptRequest.NotificationFormat, "JSON");
+            Assert.Equal(req.ReceiptRequest.NotificationFormat, NotificationFormat.JSON);
         }
 
         [Fact]
@@ -103,7 +103,7 @@ namespace Opaalib.Messaging.Tests
             Assert.Equal(req.Charging.Amount, 2.99M);
             Assert.Equal(req.SenderName, "Sonera");
             Assert.Equal(req.ReceiptRequest.NotifyUrl, "https://hostname:port/application notification endpoint");
-            Assert.Equal(req.ReceiptRequest.NotificationFormat, "JSON");
+            Assert.Equal(req.ReceiptRequest.NotificationFormat, NotificationFormat.JSON);
             Assert.Equal(req.ReceiptRequest.CallbackData, "test callback data");
         }
 
@@ -128,7 +128,7 @@ namespace Opaalib.Messaging.Tests
 	""senderName"": ""Sonera"",
 	""receiptRequest"": {
 		""notifyURL"": ""https://hostname:port/application notification endpoint"",
-		""notificationFormat"": ""JSON"",
+		""notificationFormat"": ""XML"",
 		""callbackData"": ""test callback data""
 	}
 }
@@ -146,7 +146,7 @@ namespace Opaalib.Messaging.Tests
             Assert.Equal(req.Charging.Amount, 2.99M);
             Assert.Equal(req.SenderName, "Sonera");
             Assert.Equal(req.ReceiptRequest.NotifyUrl, "https://hostname:port/application notification endpoint");
-            Assert.Equal(req.ReceiptRequest.NotificationFormat, "JSON");
+            Assert.Equal(req.ReceiptRequest.NotificationFormat, NotificationFormat.XML);
             Assert.Equal(req.ReceiptRequest.CallbackData, "test callback data");
         }
 

@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 
 namespace Opaalib.Messaging
 {
@@ -28,7 +29,6 @@ namespace Opaalib.Messaging
         [JsonProperty(PropertyName = "numberOfMessagesInThisBatch")]
         public int NumberOfMessagesInThisBatch { get; set; }
 
-        // TODO: What is anyURI type?
         /// <summary>
         /// Self-referring URL.  
         /// </summary>
@@ -51,13 +51,12 @@ namespace Opaalib.Messaging
         [JsonProperty(PropertyName = "senderAddress", Required = Required.Always)]
         public string SenderAddress { get; set; }
 
-        // TODO: Add converter (what is the date time format?)
         /// <summary>
         /// The date and time when the message is received
         /// by the operator.
         /// </summary>
         [JsonProperty(PropertyName = "dateTime")]
-        public string DateTime { get; set; }
+        public DateTime DateTime { get; set; }
 
         /// <summary>
         /// Self-referring URL. Not present, as the message is
@@ -79,7 +78,7 @@ namespace Opaalib.Messaging
         public InboundSmsTextMessage InboundSmsTextMessage { get; set; }
     }
 
-    // TODO: What does this datatype contain? Is this same as outbound version?
+    // This is probably same as OutboundSmsTextMessage
     public class InboundSmsTextMessage
     {
         [JsonProperty(PropertyName = "message", Required = Required.Always)]

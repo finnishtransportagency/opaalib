@@ -8,13 +8,10 @@ namespace Opaalib.Messaging
 {
     public class MessengerConfiguration
     {
-        // TODO: Remove this and pass as parameter?
-        public string SenderAddress { get; }
         public string BaseAddress { get; }
 
-        public MessengerConfiguration(string senderAddress, string baseAddress = "https://api.sonera.fi/sandbox/messaging/v1")
+        public MessengerConfiguration(string baseAddress = "https://api.sonera.fi/sandbox/messaging/v1")
         {
-            SenderAddress = senderAddress;
             BaseAddress = baseAddress;
         }
     }

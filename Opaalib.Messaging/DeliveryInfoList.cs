@@ -37,7 +37,6 @@ namespace Opaalib.Messaging
         [JsonProperty(PropertyName = "address", Required = Required.Always)]
         public string Address { get; set; }
 
-        // TODO: Add conversion
         /// <summary>
         /// Contains the delivery result for the destination address.
         /// </summary>

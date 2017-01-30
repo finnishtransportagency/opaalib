@@ -15,8 +15,8 @@ namespace Opaalib.Messaging
 
     public class InboundMessageRetrieveAndDeleteRequest
     {
-        // TODO: use enum instead?
         // TODO: What are the valid values
+        // Not using enum because we don't know all the possible values
         /// <summary>
         /// Specifies the order in which to retrieve
         /// messages, if there are more than one pending.
@@ -25,7 +25,8 @@ namespace Opaalib.Messaging
         [JsonProperty(PropertyName = "retrievalOrder")]
         public string RetrievalOrder { get; set; }
 
-        // TODO: use enum instead?
+        // TODO: What are the valid values
+        // Not using enum because we don't know all the possible values
         /// <summary>
         /// The priority of the message. Defaults to Normal.
         /// </summary>
@@ -49,17 +50,5 @@ namespace Opaalib.Messaging
         /// </summary>
         [JsonProperty(PropertyName = "useAttachmentURLs", Required = Required.Always)]
         public bool UseAttachmentUrls { get; set; }
-    }
-
-    // TODO: What does this data type contain?
-    public class MessagePriority
-    {
-
-    }
-
-    // TODO: What does this data type contain?
-    public class RetrievalOrder
-    {
-
     }
 }

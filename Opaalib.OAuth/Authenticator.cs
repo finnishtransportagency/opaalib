@@ -37,8 +37,6 @@ namespace Opaalib.OAuth
             Config = config;
         }
 
-        // TODO: Make json converting awaited maybe
-        // TODO: Remove url strings
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         public async Task<AccessTokenResponse> RequestAccessTokenAsync()
         {
@@ -49,7 +47,6 @@ namespace Opaalib.OAuth
                 byte[] responseBytes = null;
                 try
                 {
-                    // HACK: Using StartNew because .NET 4.0 doesn't have method which returns a Task
                     var task = TaskEx.Run(() => client.UploadValues($"{Config.BaseAddress}/token", "POST", new NameValueCollection
                     {
                         {  "grant_type", "client_credentials" }
@@ -72,7 +69,7 @@ namespace Opaalib.OAuth
                     if (statusCode == HttpStatusCode.BadRequest) throw new AuthenticationException("Invalid request", ex, responseJson);
                     if (statusCode == HttpStatusCode.Forbidden)
                     {
-                        // TODO: Handle policy exceptions
+                        // TODO: Handle policy exceptions (the format is not documented for OAuth)
                         throw new AuthenticationException("Request failed due to policy exception", ex, responseJson);
                     }
 
