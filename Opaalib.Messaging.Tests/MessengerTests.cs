@@ -195,7 +195,7 @@ namespace Opaalib.Messaging.Tests
 
             Assert.Equal("https://api.sonera.fi/production/messaging/v1/outbound/tel%3A%2B358405005900/requests/cb513ae8-c630-409e-abcb-6bb55cfd7873/deliveryInfos", res.ResourceUrl);
             Assert.Collection(res.DeliveryInfo,
-                v => 
+                v =>
                 {
                     Assert.Equal("tel:+358405007000", v.Address);
                     Assert.Equal(DeliveryStatus.DeliveryImpossible, v.DeliveryStatus);
@@ -226,6 +226,109 @@ namespace Opaalib.Messaging.Tests
 
             Assert.Equal(req.RetrievalOrder, "OldestFirst");
             Assert.Equal(req.UseAttachmentUrls, true);
+        }
+
+        [Fact]
+        public void InboundMessageRetrieveAndDeleteResponseJson1()
+        {
+            var json = @"{
+    ""inboundMessageList"": {
+        ""inboundMessage"": [
+            {
+                ""destinationAddress"": ""70200"",
+                ""senderAddress"": ""tel:+35842347002"",
+                ""dateTime"": ""2015-04-14T07:35:31.000+0000"",
+                ""resourceURL"": ""https://api.sonera.fi/production/messaging/v1/inbound/registrations/822c82991bd145e493a3690e871800e2/messages/retrieveAndDeleteMessages/4883911"",
+                ""messageId"": ""4883911"",
+                ""inboundSMSTextMessage"": {
+                    ""message"": ""Nokeyword FN-REC-ONLY-02 - Autoframing""
+                }
+            },
+            {
+                ""destinationAddress"": ""70200"",
+                ""senderAddress"": ""tel:+35842347002"",
+                ""dateTime"": ""2015-04-14T07:36:31.000+0000"",
+                ""resourceURL"": ""https://api.sonera.fi/production/messaging/v1/inbound/registrations/822c82991bd145e493a3690e871800e2/messages/retrieveAndDeleteMessages/4883912"",
+                ""messageId"": ""4883912"",
+                ""inboundSMSTextMessage"": {
+                    ""message"": ""Nokeyword FN-REC-ONLY-02 - Autoframing""
+                }
+            }
+        ],
+        ""totalNumberOfPendingMessages"": 0,
+        ""numberOfMessagesInThisBatch"": 2,
+        ""resourceURL"": ""https://api.sonera.fi/production/messaging/v1/inbound/registrations/822c82991bd145e493a3690e871800e2/messages/retrieveAndDeleteMessages""
+    }
+}";
+
+            var d = JsonConvert.DeserializeObject<InboundMessageListContainer>(json);
+            var req = d.InboundMessageList;
+
+            Assert.Collection(req.InboundMessage,
+                v =>
+                {
+                    Assert.Equal(DateTime.Parse("2015-04-14T07:35:31.000+0000"), v.DateTime);
+                    Assert.Equal("Nokeyword FN-REC-ONLY-02 - Autoframing", v.InboundSmsTextMessage.Message);
+                },
+                v =>
+                {
+                    Assert.Equal(DateTime.Parse("2015-04-14T07:36:31.000+0000"), v.DateTime);
+                    Assert.Equal("Nokeyword FN-REC-ONLY-02 - Autoframing", v.InboundSmsTextMessage.Message);
+                });
+            Assert.Equal(0, req.TotalNumberOfPendingMessages);
+            Assert.Equal(2, req.NumberOfMessagesInThisBatch);
+        }
+
+        [Fact]
+        public void ServiceException()
+        {
+            var json = @"{
+    ""requestError"": {
+        ""serviceException"": {
+            ""messageId"": ""SVC0002"",
+            ""text"": ""Invalid input value for message part %1 with value %2. Reason %3"",
+            ""variables"": [
+                ""address"",
+                ""447919891111"",
+                ""Invalid address element""
+            ]
+        }
+    }
+}";
+            var re = JsonConvert.DeserializeObject<RequestErrorContainer>(json).RequestError;
+
+            Assert.Null(re.PolicyException);
+            Assert.Equal("Invalid input value for message part address with value 447919891111. Reason Invalid address element", 
+                re.ServiceException.FormattedText);
+            Assert.Collection(re.ServiceException.Variables,
+                v => Assert.Equal("address", v),
+                v => Assert.Equal("447919891111", v),
+                v => Assert.Equal("Invalid address element", v));
+        }
+
+        [Fact]
+        public void PolicyException()
+        {
+            var json = @"{
+    ""requestError"": {
+        ""policyException"": {
+            ""messageId"": ""POL2000"",
+            ""text"": ""The following policy error occurred: %1. Error code is %2."",
+            ""variables"": [
+                ""Destination Black List is enforced and address is in Destination Black List."",
+                ""POL-028""
+            ]
+        }
+    }
+}";
+            var re = JsonConvert.DeserializeObject<RequestErrorContainer>(json).RequestError;
+
+            Assert.Null(re.ServiceException);
+            Assert.Equal("The following policy error occurred: Destination Black List is enforced and address is in Destination Black List.. Error code is POL-028.",
+                re.PolicyException.FormattedText);
+            Assert.Collection(re.PolicyException.Variables,
+                v => Assert.Equal("Destination Black List is enforced and address is in Destination Black List.", v),
+                v => Assert.Equal("POL-028", v));
         }
     }
 }
