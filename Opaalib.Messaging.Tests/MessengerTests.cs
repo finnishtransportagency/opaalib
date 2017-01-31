@@ -7,7 +7,7 @@ namespace Opaalib.Messaging.Tests
 {
     public class MessengerTests
     {
-        [Fact]
+        [Fact(Skip = "Not needed because this conversion doesn't happen anymore")]
         public void AddressConversion()
         {
             var omrD = JsonConvert.DeserializeObject<OutboundMessageRequest>(@"{ address: ""test1"", senderAddress: ""asd"" }");
