@@ -98,7 +98,8 @@ namespace Opaalib.Messaging
         /// <summary>
         /// JSON or XML
         /// </summary>
-        [JsonProperty(PropertyName = "notificationFormat", ItemConverterType = typeof(StringEnumConverter))]
+        [JsonConverter(typeof(StringEnumConverter))]
+        [JsonProperty(PropertyName = "notificationFormat")]
         public NotificationFormat NotificationFormat { get; set; }
 
         /// <summary>
