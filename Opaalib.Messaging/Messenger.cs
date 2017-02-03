@@ -77,9 +77,7 @@ namespace Opaalib.Messaging
             }
         }
 
-        /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
-        /// <exception cref="MessengerException">Thrown when reading delivery status fails</exception>
-        public async Task<DeliveryInfoList> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress)
+        public async Task<DeliveryInfoList> ReadOutboundMessageDeliveryStatusAsync(string outboundResourceUrl)
         {
             await RefreshAccessTokenIfNeededAsync();
 
@@ -90,8 +88,7 @@ namespace Opaalib.Messaging
                 byte[] responseBytes = null;
                 try
                 {
-                    responseBytes = await client.DownloadDataTaskAsync(
-                        $"{Config.BaseAddress}/outbound/{senderAddress}/requests/{requestId}/deliveryInfos");
+                    responseBytes = await client.DownloadDataTaskAsync($"{outboundResourceUrl}/deliveryInfos");
 
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
@@ -114,6 +111,13 @@ namespace Opaalib.Messaging
                     throw new MessengerException("Response reading failed due to unknown reason", ex);
                 }
             }
+        }
+
+        /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
+        /// <exception cref="MessengerException">Thrown when reading delivery status fails</exception>
+        public async Task<DeliveryInfoList> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress)
+        {
+            return await ReadOutboundMessageDeliveryStatusAsync($"{Config.BaseAddress}/outbound/{senderAddress}/requests/{requestId}");
         }
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>

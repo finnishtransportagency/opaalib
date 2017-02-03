@@ -22,5 +22,7 @@ namespace Opaalib.Messaging
         /// </summary>
         [JsonProperty(PropertyName = "resourceURL", Required = Required.Always)]
         public string ResourceUrl { get; set; }
+
+        public string RequestId => ResourceUrl?.Split('/').LastOrDefault();
     }
 }
