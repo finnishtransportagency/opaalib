@@ -37,6 +37,12 @@ namespace Opaalib.OAuth
             Config = config;
         }
 
+        public Authenticator(string username, string password)
+            : this(username, password, AuthenticatorConfiguration.Default)
+        {
+
+        }
+
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         public async Task<AccessTokenResponse> RequestAccessTokenAsync()
         {

@@ -14,5 +14,7 @@ namespace Opaalib.Messaging
         {
             BaseAddress = baseAddress;
         }
+
+        public static MessengerConfiguration Default => new MessengerConfiguration();
     }
 }

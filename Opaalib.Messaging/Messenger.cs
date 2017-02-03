@@ -29,9 +29,15 @@ namespace Opaalib.Messaging
             Config = messengerConfiguration;
         }
 
+        public Messenger(Authenticator authenticator)
+            : this(authenticator, MessengerConfiguration.Default)
+        {
+            
+        }
+
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when sending of outbound message request fails</exception>
-        public async Task<OutboundMessageResponse> OutboundMessageRequestAsync(OutboundMessageRequestContainer outboundMessage)
+        public async Task<OutboundMessageResponse> OutboundMessageRequestAsync(OutboundMessageRequest outboundMessage)
         {
             await RefreshAccessTokenIfNeededAsync();
 
@@ -43,11 +49,12 @@ namespace Opaalib.Messaging
                 byte[] responseBytes = null;
                 try
                 {
-                    var jsonStr = JsonConvert.SerializeObject(outboundMessage);
+                    var finalOutboundMessage = new OutboundMessageRequestContainer { OutboundMessageRequest = outboundMessage };
+                    var jsonStr = JsonConvert.SerializeObject(finalOutboundMessage);
                     var jsonBytes = Encoding.UTF8.GetBytes(jsonStr);
 
                     responseBytes = await client.UploadDataTaskAsync(
-                        $"{Config.BaseAddress}/outbound/{outboundMessage.OutboundMessageRequest.SenderAddress}/requests", "POST", jsonBytes);
+                        $"{Config.BaseAddress}/outbound/{outboundMessage.SenderAddress}/requests", "POST", jsonBytes);
                 }
                 catch (WebException ex) when (ex.Status == WebExceptionStatus.ProtocolError)
                 {
@@ -72,7 +79,7 @@ namespace Opaalib.Messaging
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when reading delivery status fails</exception>
-        public async Task<DeliveryInfoListContainer> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress)
+        public async Task<DeliveryInfoList> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress)
         {
             await RefreshAccessTokenIfNeededAsync();
 
@@ -99,7 +106,8 @@ namespace Opaalib.Messaging
                 try
                 {
                     var response = Encoding.UTF8.GetString(responseBytes);
-                    return JsonConvert.DeserializeObject<DeliveryInfoListContainer>(response);
+                    var jsonObj = JsonConvert.DeserializeObject<DeliveryInfoListContainer>(response);
+                    return jsonObj.DeliveryInfoList;
                 }
                 catch (Exception ex)
                 {
@@ -110,7 +118,7 @@ namespace Opaalib.Messaging
 
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when sending of inbound message request fails</exception>
-        public async Task<InboundMessageListContainer> RetrieveAndDeleteMessagesAsync(InboundMessageRetrieveAndDeleteRequestContainer inboundMessage, string registrationId)
+        public async Task<InboundMessageList> RetrieveAndDeleteMessagesAsync(InboundMessageRetrieveAndDeleteRequest inboundMessage, string registrationId)
         {
             await RefreshAccessTokenIfNeededAsync();
 
@@ -122,7 +130,8 @@ namespace Opaalib.Messaging
                 byte[] responseBytes = null;
                 try
                 {
-                    var jsonStr = JsonConvert.SerializeObject(inboundMessage);
+                    var finalInboundMessage = new InboundMessageRetrieveAndDeleteRequestContainer { InboundMessageRetrieveAndDeleteRequest = inboundMessage };
+                    var jsonStr = JsonConvert.SerializeObject(finalInboundMessage);
                     var jsonBytes = Encoding.UTF8.GetBytes(jsonStr);
 
                     responseBytes = await client.UploadDataTaskAsync(
@@ -140,7 +149,8 @@ namespace Opaalib.Messaging
                 try
                 {
                     var response = Encoding.UTF8.GetString(responseBytes);
-                    return JsonConvert.DeserializeObject<InboundMessageListContainer>(response);
+                    var jsonObj = JsonConvert.DeserializeObject<InboundMessageListContainer>(response);
+                    return jsonObj.InboundMessageList;
                 }
                 catch (Exception ex)
                 {
@@ -150,8 +160,8 @@ namespace Opaalib.Messaging
         }
 
         public IDisposable StartReceivingNotifications(
-            Uri inboundMessageBaseUri, IObserver<InboundMessageNotificationContainer> inboundMessageObserver,
-            Uri outboundMessageStatusBaseUri, IObserver<DeliveryInfoNotificationContainer> outboundMessageStatusObserver)
+            Uri inboundMessageBaseUri, IObserver<InboundMessageNotification> inboundMessageObserver,
+            Uri outboundMessageStatusBaseUri, IObserver<DeliveryInfoNotification> outboundMessageStatusObserver)
         {
             // parameters have to be either both null or neither null
             if ((inboundMessageBaseUri == null) != (inboundMessageObserver == null))
@@ -174,16 +184,16 @@ namespace Opaalib.Messaging
             if (outboundMessageStatusBaseUri != null) listener.Prefixes.Add(outboundMessageStatusBaseUri.AbsoluteUri);
             listener.Start();
 
-            Subject<InboundMessageNotificationContainer> inboundMessageSubject = null;
+            Subject<InboundMessageNotification> inboundMessageSubject = null;
             if (inboundMessageObserver != null)
             {
-                inboundMessageSubject = new Subject<InboundMessageNotificationContainer>();
+                inboundMessageSubject = new Subject<InboundMessageNotification>();
                 inboundMessageSubject.Subscribe(inboundMessageObserver);
             }
-            Subject<DeliveryInfoNotificationContainer> outboundMessageStatusSubject = null;
+            Subject<DeliveryInfoNotification> outboundMessageStatusSubject = null;
             if (outboundMessageStatusObserver != null)
             {
-                outboundMessageStatusSubject = new Subject<DeliveryInfoNotificationContainer>();
+                outboundMessageStatusSubject = new Subject<DeliveryInfoNotification>();
                 outboundMessageStatusSubject.Subscribe(outboundMessageStatusObserver);
             }
 
@@ -248,10 +258,11 @@ namespace Opaalib.Messaging
 
                     if (inboundMessageBaseUri != null && request.Url.AbsolutePath.TrimEnd('/').EndsWith(inboundMessageBaseUri.AbsolutePath.TrimEnd('/')))
                     {
-                        InboundMessageNotificationContainer requestObject = null;
+                        InboundMessageNotification requestObject = null;
                         try
                         {
-                            requestObject = JsonConvert.DeserializeObject<InboundMessageNotificationContainer>(str);
+                            var tempRequestObject = JsonConvert.DeserializeObject<InboundMessageNotificationContainer>(str);
+                            requestObject = tempRequestObject.InboundMessageNotification;
                         }
                         catch (Exception)
                         {
@@ -274,10 +285,11 @@ namespace Opaalib.Messaging
                     sameUriContinue:
                     if (outboundMessageStatusBaseUri != null && request.Url.AbsolutePath.TrimEnd('/').EndsWith(outboundMessageStatusBaseUri.AbsolutePath.TrimEnd('/')))
                     {
-                        DeliveryInfoNotificationContainer requestObject = null;
+                        DeliveryInfoNotification requestObject = null;
                         try
                         {
-                            requestObject = JsonConvert.DeserializeObject<DeliveryInfoNotificationContainer>(str);
+                            var tempRequestObject = JsonConvert.DeserializeObject<DeliveryInfoNotificationContainer>(str);
+                            requestObject = tempRequestObject.DeliveryInfoNotification;
                         }
                         catch (Exception)
                         {
