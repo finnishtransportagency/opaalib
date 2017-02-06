@@ -238,7 +238,7 @@ namespace Opaalib.Messaging
                         continue;
                     }
 
-                    if (request.ContentType != "application/json")
+                    if (!request.ContentType.Contains("application/json"))
                     {
                         response.StatusCode = (int)HttpStatusCode.UnsupportedMediaType;
                         response.Close();
