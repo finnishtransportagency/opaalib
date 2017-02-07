@@ -35,6 +35,9 @@ namespace Opaalib.Messaging
             
         }
 
+        /// <summary>
+        /// Send an outbound message
+        /// </summary>
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when sending of outbound message request fails</exception>
         public async Task<OutboundMessageResponse> OutboundMessageRequestAsync(OutboundMessageRequest outboundMessage)
@@ -77,6 +80,11 @@ namespace Opaalib.Messaging
             }
         }
 
+        /// <summary>
+        /// Read delivery status from resource url received from <see cref="OutboundMessageResponse" /> instance
+        /// </summary>
+        /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
+        /// <exception cref="MessengerException">Thrown when reading delivery status fails</exception>
         public async Task<DeliveryInfoList> ReadOutboundMessageDeliveryStatusAsync(string outboundResourceUrl)
         {
             await RefreshAccessTokenIfNeededAsync();
@@ -113,6 +121,9 @@ namespace Opaalib.Messaging
             }
         }
 
+        /// <summary>
+        /// Read delivery status from provided resource id and sender address
+        /// </summary>
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when reading delivery status fails</exception>
         public async Task<DeliveryInfoList> ReadOutboundMessageDeliveryStatusAsync(string requestId, string senderAddress)
@@ -120,6 +131,9 @@ namespace Opaalib.Messaging
             return await ReadOutboundMessageDeliveryStatusAsync($"{Config.BaseAddress}/outbound/{senderAddress}/requests/{requestId}");
         }
 
+        /// <summary>
+        /// Poll for inbound messages
+        /// </summary>
         /// <exception cref="AuthenticationException">Thrown when the authentication fails</exception>
         /// <exception cref="MessengerException">Thrown when sending of inbound message request fails</exception>
         public async Task<InboundMessageList> RetrieveAndDeleteMessagesAsync(InboundMessageRetrieveAndDeleteRequest inboundMessage, string registrationId)
@@ -163,6 +177,15 @@ namespace Opaalib.Messaging
             }
         }
 
+        /// <summary>
+        /// Start listening for messages
+        /// </summary>
+        /// <param name="inboundMessageBaseUri">Address to bind the HTTP server for listening. Example: "<code>http://192.168.1.10:80/inbound/</code>"</param>
+        /// <param name="inboundMessageObserver">Observer for inbound messages</param>
+        /// <param name="outboundMessageStatusBaseUri">Address to bind the HTTP server for listening. Example: "<code>http://192.168.1.10:80/outboundstatus/</code>
+        /// <para/>The same address should be passed in <see cref="ReceiptRequest"/> when sending an outbound message</param>
+        /// <param name="outboundMessageStatusObserver">Observer for outbound message statuses</param>
+        /// <remarks>Using same address for both notification types is supported but not recommeded</remarks>
         public IDisposable StartReceivingNotifications(
             Uri inboundMessageBaseUri, IObserver<InboundMessageNotification> inboundMessageObserver,
             Uri outboundMessageStatusBaseUri, IObserver<DeliveryInfoNotification> outboundMessageStatusObserver)

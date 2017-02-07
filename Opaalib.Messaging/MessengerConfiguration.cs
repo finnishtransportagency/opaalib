@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Opaalib.Messaging
 {
+    /// <summary>
+    /// Uses sandbox api instead of production by default
+    /// </summary>
     public class MessengerConfiguration
     {
         public string BaseAddress { get; }
