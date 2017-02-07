@@ -26,16 +26,28 @@ var outboundResponse = await messenger.OutboundMessageRequestAsync(new OutboundM
 // check outbound message status
 var outboundStatus = await messenger.ReadOutboundMessageDeliveryStatusAsync(outboundResponse.ResourceReference.ResourceUrl);
 
-// check for incoming messages
+// poll for incoming messages
 var inboundMessages = await messenger.RetrieveAndDeleteMessagesAsync(new InboundMessageRetrieveAndDeleteRequest
 {
     UseAttachmentUrls = true,
 }, "my registration id");
+
+// wait for notifications
+var inboundObs = Observer.Create<InboundMessageNotification>(v => { /* handle inbound message here */ });
+var outboundStatusObs = Observer.Create<DeliveryInfoNotification>(v => { /* handle outbound status here */ });
+
+using (messenger.StartReceivingNotifications(
+    new Uri("http://192.168.1.10:80/inbound/"), inboundObs, // inbound message http server config
+    new Uri("http://192.168.1.10:80/outboundstatus/"), outboundStatusObs)) // outbound message status http server config
+{
+
+}
 ```
 
 ## Requirements
 
 * .NET Framework 4.0 or higher
+* Visual Studio 2017 (for compiling)
 
 ## Implementation status
 
