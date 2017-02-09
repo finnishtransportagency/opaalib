@@ -248,7 +248,7 @@ namespace Opaalib.Messaging
                         }
                         catch (Exception)
                         {
-                            
+                            // ignored
                         }
 
                         return;
@@ -276,10 +276,12 @@ namespace Opaalib.Messaging
                             str = await tr.ReadToEndAsync();
                         }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
                         response.StatusCode = (int)HttpStatusCode.BadRequest;
                         response.Close();
+                        inboundMessageSubject?.OnError(new ApplicationException("Failed to read the API response", ex));
+                        outboundMessageStatusSubject?.OnError(new ApplicationException("Failed to read the API response", ex));
                         continue;
                     }
 
@@ -291,7 +293,7 @@ namespace Opaalib.Messaging
                             var tempRequestObject = JsonConvert.DeserializeObject<InboundMessageNotificationContainer>(str);
                             requestObject = tempRequestObject.InboundMessageNotification;
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             // if the uris are same we need to check which JSON object it is by trying to deserialize to both objects
                             // so having same uris makes this whole thing slower
@@ -299,6 +301,7 @@ namespace Opaalib.Messaging
 
                             response.StatusCode = (int)HttpStatusCode.BadRequest;
                             response.Close();
+                            inboundMessageSubject.OnError(new JsonSerializationException("Failed to parse response JSON", ex));
                             continue;
                         }
 
@@ -318,10 +321,11 @@ namespace Opaalib.Messaging
                             var tempRequestObject = JsonConvert.DeserializeObject<DeliveryInfoNotificationContainer>(str);
                             requestObject = tempRequestObject.DeliveryInfoNotification;
                         }
-                        catch (Exception)
+                        catch (Exception ex)
                         {
                             response.StatusCode = (int)HttpStatusCode.BadRequest;
                             response.Close();
+                            outboundMessageStatusSubject.OnError(new JsonSerializationException("Failed to parse response JSON", ex));
                             continue;
                         }
 
@@ -332,14 +336,22 @@ namespace Opaalib.Messaging
                         continue;
                     }
                 }
-            }, token);
-            
+            }, token).ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    inboundMessageSubject?.OnError(new InvalidOperationException("The http listener has crashed"));
+                    outboundMessageStatusSubject?.OnError(new InvalidOperationException("The http listener has crashed"));
+                }
+            });
+
             return Disposable.Create(() =>
             {
                 cts.Cancel();
                 listener.Stop();
                 listener.Close();
-                inboundMessageSubject.Dispose();
+                inboundMessageSubject?.Dispose();
+                outboundMessageStatusSubject.Dispose();
             });
         }
 
