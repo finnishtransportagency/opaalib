@@ -361,7 +361,7 @@ namespace Opaalib.Messaging
             await TaskEx.Run(() => accessTokenLock.Wait());
 
             var expires = (DateTime.UtcNow - accessTokenExpires).TotalSeconds;
-            if (latestAccessToken != null && (DateTime.UtcNow - accessTokenExpires).TotalSeconds > 10)
+            if (latestAccessToken != null && (accessTokenExpires - DateTime.UtcNow).TotalSeconds > 10)
             {
                 accessTokenLock.Release();
                 return;
