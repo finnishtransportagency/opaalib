@@ -8,7 +8,7 @@ namespace Opaalib.Shared
 {
     public class MyWebClient : WebClient
     {
-        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(10d);
+        public TimeSpan Timeout { get; set; } = TimeSpan.FromSeconds(100d);
 
         protected override WebRequest GetWebRequest(Uri address)
         {

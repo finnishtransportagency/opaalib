@@ -11,6 +11,7 @@ namespace Opaalib.Messaging
 {
     public class MessengerException : Exception
     {
+        public string RawResponse { get; }
         public RequestError RequestError { get; }
 
         public MessengerException(string message, Exception innerException)
@@ -27,6 +28,7 @@ namespace Opaalib.Messaging
                 using (var sr = new StreamReader(stream))
                 {
                     var responseJson = sr.ReadToEnd();
+                    RawResponse = responseJson;
                     RequestError = JsonConvert.DeserializeObject<RequestErrorContainer>(responseJson).RequestError;
                 }
             }
